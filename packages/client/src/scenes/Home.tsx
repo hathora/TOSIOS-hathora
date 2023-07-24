@@ -13,12 +13,12 @@ import {
     View,
 } from '../components';
 import { Constants, Types } from '@tosios/common';
+import { LobbyState, LobbyInitialConfig, getActiveLobbies } from '@tosios/common/src/hathora';
 import React, { Component, Fragment } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 import { playerImage, titleImage } from '../images';
-import { Client } from 'colyseus.js';
+import { Lobby } from "@hathora/hathora-cloud-sdk";
 import { Helmet } from 'react-helmet';
-import { RoomAvailable } from 'colyseus.js/lib/Room';
 import qs from 'querystringify';
 import { useAnalytics } from '../hooks';
 
@@ -47,13 +47,11 @@ interface IState {
     roomMap: any;
     roomMaxPlayers: any;
     mode: any;
-    rooms: Array<RoomAvailable<any>>;
+    rooms: Array<Lobby>;
     timer: NodeJS.Timeout | null;
 }
 
 export default class Home extends Component<IProps, IState> {
-    private client?: Client;
-
     constructor(props: IProps) {
         super(props);
 
@@ -73,11 +71,7 @@ export default class Home extends Component<IProps, IState> {
     // BASE
     componentDidMount() {
         try {
-            const host = window.document.location.host.replace(/:.*/, '');
-            const port = process.env.NODE_ENV !== 'production' ? Constants.WS_PORT : window.location.port;
-            const url = `${window.location.protocol.replace('http', 'ws')}//${host}${port ? `:${port}` : ''}`;
-
-            this.client = new Client(url);
+            this.updateRooms();
             this.setState(
                 {
                     timer: setInterval(this.updateRooms, Constants.ROOM_REFRESH),
@@ -161,11 +155,7 @@ export default class Home extends Component<IProps, IState> {
 
     // METHODS
     updateRooms = async () => {
-        if (!this.client) {
-            return;
-        }
-
-        const rooms = await this.client.getAvailableRooms(Constants.ROOM_NAME);
+        const rooms = await getActiveLobbies();
         this.setState({
             rooms,
         });
@@ -381,20 +371,20 @@ export default class Home extends Component<IProps, IState> {
             );
         }
 
-        return rooms.map(({ roomId, metadata, clients, maxClients }, index) => {
-            const map = MapsList.find((item) => item.value === metadata.roomMap);
-            const mapName = map ? map.title : metadata.roomMap;
+        return rooms.map(({ initialConfig, roomId, state }, index) => {
+            const typedInitialConfig = initialConfig as LobbyInitialConfig;
+            const typedState = state as LobbyState;
 
             return (
                 <Fragment key={roomId}>
                     <Room
                         id={roomId}
-                        roomName={metadata.roomName}
-                        roomMap={mapName}
-                        clients={clients}
-                        maxClients={maxClients}
-                        mode={metadata.mode}
-                        onClick={this.handleRoomClick}
+                        roomName={typedInitialConfig.roomName}
+                        roomMap={typedInitialConfig.roomMap}
+                        clients={typedState?.playerCount ?? 0}
+                        maxClients={typedInitialConfig.roomMaxPlayers}
+                        mode={typedInitialConfig.mode}
+                        onClick={() => this.handleRoomClick(roomId)}
                     />
                     {index !== rooms.length - 1 && <Space size="xxs" />}
                 </Fragment>

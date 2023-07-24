@@ -1,4 +1,5 @@
 import { Client, Room } from 'colyseus';
+import { setLobbyState, destroyLobby } from '@tosios/common/src/hathora';
 import { Constants, Maths, Models, Types } from '@tosios/common';
 import { GameState } from '../states/GameState';
 
@@ -6,7 +7,9 @@ export class GameRoom extends Room<GameState> {
     //
     // Lifecycle
     //
-    onCreate(options: Types.IRoomOptions) {
+    onCreate(options: Types.IRoomOptions & { hathoraId: string }) {
+        this.roomId = options.hathoraId;
+
         // Set max number of clients for this room
         this.maxClients = Maths.clamp(
             options.roomMaxPlayers || 0,
@@ -57,16 +60,22 @@ export class GameRoom extends Room<GameState> {
         });
     }
 
-    onJoin(client: Client, options: Types.IPlayerOptions) {
+    async onJoin(client: Client, options: Types.IPlayerOptions) {
         this.state.playerAdd(client.sessionId, options.playerName);
+        await setLobbyState(this.roomId, this.clients.length);
 
         console.log(`${new Date().toISOString()} [Join] id=${client.sessionId} player=${options.playerName}`);
     }
 
-    onLeave(client: Client) {
+    async onLeave(client: Client) {
         this.state.playerRemove(client.sessionId);
+        await setLobbyState(this.roomId, this.clients.length);
 
         console.log(`${new Date().toISOString()} [Leave] id=${client.sessionId}`);
+    }
+
+    async onDispose () {
+        await destroyLobby(this.roomId);
     }
 
     //

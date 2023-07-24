@@ -4,6 +4,7 @@
     "private": true,
     "main": "./src/index.tsx",
     "dependencies": {
+        "@hathora/hathora-cloud-sdk": "^0.0.5",
         "@reach/router": "^1.2.1",
         "@tosios/common": "0.1.0",
         "colyseus.js": "^0.14.0",

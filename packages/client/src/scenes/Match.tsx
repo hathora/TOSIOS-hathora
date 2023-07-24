@@ -9,6 +9,8 @@ import ReactNipple from 'react-nipple';
 import { View } from '../components';
 import { isMobile } from 'react-device-detect';
 import qs from 'querystringify';
+import { createLobby, pollConnectionInfo } from '@tosios/common/src/hathora';
+import { ConnectionInfo } from '@hathora/hathora-cloud-sdk';
 
 interface IProps extends RouteComponentProps {
     roomId?: string;
@@ -85,17 +87,18 @@ export default class Match extends Component<IProps, IState> {
 
         // Connect
         try {
-            const host = window.document.location.host.replace(/:.*/, '');
-            const port = process.env.NODE_ENV !== 'production' ? Constants.WS_PORT : window.location.port;
-            const url = `${window.location.protocol.replace('http', 'ws')}//${host}${port ? `:${port}` : ''}`;
-
-            this.client = new Client(url);
             if (isNewRoom) {
+                const lobby = await createLobby(options);
+                const url = await pollConnectionInfo(lobby.roomId);
+                this.client = new Client(url);
+                options.hathoraId = lobby.roomId;
                 this.room = await this.client.create(Constants.ROOM_NAME, options);
 
                 // We replace the "new" in the URL with the room's id
                 window.history.replaceState(null, '', `/${this.room.id}`);
             } else {
+                const url = await pollConnectionInfo(roomId);
+                this.client = new Client(url);
                 this.room = await this.client.joinById(roomId, options);
             }
         } catch (error) {
