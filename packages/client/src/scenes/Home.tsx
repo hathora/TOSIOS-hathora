@@ -17,7 +17,7 @@ import { LobbyState, LobbyInitialConfig, getActiveLobbies } from '@tosios/common
 import React, { Component, Fragment } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 import { playerImage, titleImage } from '../images';
-import { Lobby } from "@hathora/hathora-cloud-sdk";
+import { Lobby } from '@hathora/cloud-sdk-typescript/models/components';
 import { Helmet } from 'react-helmet';
 import qs from 'querystringify';
 import { useAnalytics } from '../hooks';

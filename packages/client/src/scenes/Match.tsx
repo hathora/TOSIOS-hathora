@@ -10,7 +10,6 @@ import { View } from '../components';
 import { isMobile } from 'react-device-detect';
 import qs from 'querystringify';
 import { createLobby, pollConnectionInfo } from '@tosios/common/src/hathora';
-import { ConnectionInfo } from '@hathora/hathora-cloud-sdk';
 
 interface IProps extends RouteComponentProps {
     roomId?: string;
