@@ -6,7 +6,7 @@
     "dependencies": {
         "@colyseus/monitor": "^0.14.0",
         "@colyseus/schema": "^1.0.3",
-        "@hathora/hathora-cloud-sdk": "^0.0.5",
+        "@hathora/cloud-sdk-typescript": "^2.5.0",
         "@tosios/common": "0.1.0",
         "colyseus": "^0.14.2",
         "compression": "^1.7.4",

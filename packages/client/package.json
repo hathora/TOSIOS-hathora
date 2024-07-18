@@ -4,7 +4,7 @@
     "private": true,
     "main": "./src/index.tsx",
     "dependencies": {
-        "@hathora/hathora-cloud-sdk": "^0.0.5",
+        "@hathora/cloud-sdk-typescript": "^2.5.0",
         "@reach/router": "^1.2.1",
         "@tosios/common": "0.1.0",
         "colyseus.js": "^0.14.0",
@@ -18,7 +18,8 @@
         "react-dom": "^16.12.0",
         "react-ga": "^3.2.0",
         "react-helmet": "^5.2.1",
-        "react-nipple": "^1.0.1"
+        "react-nipple": "^1.0.1",
+        "zod": "^3.23.8"
     },
     "browserslist": [
         ">0.2%",
