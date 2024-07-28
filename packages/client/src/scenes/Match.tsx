@@ -76,6 +76,7 @@ export default class Match extends Component<IProps, IState> {
             options = {
                 ...parsedSearch,
                 roomMaxPlayers: Number(parsedSearch.roomMaxPlayers),
+                playerCount: 0,
             };
         } else {
             // The only thing to pass when joining an existing room is a player's name

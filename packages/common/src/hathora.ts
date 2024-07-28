@@ -2,30 +2,35 @@ import { HathoraCloud } from '@hathora/cloud-sdk-typescript';
 import { Region } from '@hathora/cloud-sdk-typescript/models/components';
 import { GameMode } from './types';
 
-export type LobbyState = { playerCount: number };
-export type LobbyInitialConfig = { roomName: string; roomMap: string; roomMaxPlayers: number; mode: GameMode };
+export type LobbyConfig = {
+    roomName: string;
+    roomMap: string;
+    roomMaxPlayers: number;
+    mode: GameMode;
+    playerCount: number;
+};
 
 const hathoraCloud = new HathoraCloud({
     appId: 'app-54ce5976-0eb1-460e-bf83-be25fd1f1737',
     hathoraDevToken: typeof process !== 'undefined' ? `Bearer ${process.env.HATHORA_DEVELOPER_TOKEN}` : undefined,
 });
 
-const lobbyClient = hathoraCloud.lobbiesV2;
+const lobbyClient = hathoraCloud.lobbiesV3;
 const roomClient = hathoraCloud.roomsV2;
 const authClient = hathoraCloud.authV1;
 const discoveryClient = hathoraCloud.discoveryV2;
 
-export const createLobby = async (initialConfig: LobbyInitialConfig) => {
+export const createLobby = async (lobbyConfig: LobbyConfig) => {
     const region = await getClosestRegion();
     const playerToken = (await authClient.loginAnonymous()).token;
-    return await lobbyClient.createLobbyDeprecated(
+    return await lobbyClient.createLobby(
         { playerAuth: playerToken },
-        { visibility: 'public', region, initialConfig },
+        { visibility: 'public', region, roomConfig: JSON.stringify(lobbyConfig) },
     );
 };
 
 export const getActiveLobbies = async () => {
-    return await lobbyClient.listActivePublicLobbiesDeprecatedV2();
+    return await lobbyClient.listActivePublicLobbies();
 };
 
 export const pollConnectionInfo = async (roomId: string) => {
@@ -40,8 +45,8 @@ export const pollConnectionInfo = async (roomId: string) => {
     console.error('Timed out waiting for connection info');
 };
 
-export const setLobbyState = async (roomId: string, playerCount: number) => {
-    await lobbyClient.setLobbyState(roomId, { state: { playerCount } });
+export const setLobbyConfig = async (roomId: string, lobbyConfig: LobbyConfig) => {
+    await roomClient.updateRoomConfig(roomId, { roomConfig: JSON.stringify(lobbyConfig) });
 };
 
 export const destroyLobby = async (roomId: string) => {

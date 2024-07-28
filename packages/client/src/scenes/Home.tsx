@@ -13,11 +13,11 @@ import {
     View,
 } from '../components';
 import { Constants, Types } from '@tosios/common';
-import { LobbyState, LobbyInitialConfig, getActiveLobbies } from '@tosios/common/src/hathora';
+import { LobbyConfig, getActiveLobbies } from '@tosios/common/src/hathora';
 import React, { Component, Fragment } from 'react';
 import { RouteComponentProps, navigate } from '@reach/router';
 import { playerImage, titleImage } from '../images';
-import { Lobby } from '@hathora/cloud-sdk-typescript/models/components';
+import { LobbyV3 } from '@hathora/cloud-sdk-typescript/models/components';
 import { Helmet } from 'react-helmet';
 import qs from 'querystringify';
 import { useAnalytics } from '../hooks';
@@ -47,7 +47,7 @@ interface IState {
     roomMap: any;
     roomMaxPlayers: any;
     mode: any;
-    rooms: Array<Lobby>;
+    rooms: Array<LobbyV3>;
     timer: NodeJS.Timeout | null;
 }
 
@@ -371,19 +371,18 @@ export default class Home extends Component<IProps, IState> {
             );
         }
 
-        return rooms.map(({ initialConfig, roomId, state }, index) => {
-            const typedInitialConfig = initialConfig as LobbyInitialConfig;
-            const typedState = state as LobbyState;
+        return rooms.map(({ roomConfig, roomId }, index) => {
+            const typedRoomConfig = JSON.parse(roomConfig) as LobbyConfig;
 
             return (
                 <Fragment key={roomId}>
                     <Room
                         id={roomId}
-                        roomName={typedInitialConfig.roomName}
-                        roomMap={typedInitialConfig.roomMap}
-                        clients={typedState?.playerCount ?? 0}
-                        maxClients={typedInitialConfig.roomMaxPlayers}
-                        mode={typedInitialConfig.mode}
+                        roomName={typedRoomConfig.roomName}
+                        roomMap={typedRoomConfig.roomMap}
+                        clients={typedRoomConfig.playerCount}
+                        maxClients={typedRoomConfig.roomMaxPlayers}
+                        mode={typedRoomConfig.mode}
                         onClick={() => this.handleRoomClick(roomId)}
                     />
                     {index !== rooms.length - 1 && <Space size="xxs" />}
